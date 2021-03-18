@@ -1,0 +1,36 @@
+#!/usr/bin/env python3
+import sys
+import routeros_api
+import time
+
+IP = sys.argv[1]
+action = sys.argv[2]
+
+connection = routeros_api.RouterOsApiPool('192.168.131.111', username='admin', password='')
+api = connection.get_api()
+bgp_policy = api.get_resource('/routing/filter')
+output = bgp_policy.get()
+
+if action == "ban":
+    for i in output:
+        if ("SWALL-out" in i.values() and IP in i.values()):
+            bgp_policy.set(id=i["id"], disabled="false")
+            time.sleep(15)
+
+if action == "ban":
+    for i in output:
+        if ("ISP-out" in i.values() and IP in i.values()):    
+            bgp_policy.set(id=i["id"], disabled="true")
+            connection.disconnect()
+
+if action == "unban":
+    for i in output:
+        if ("ISP-out" in i.values() and IP in i.values()):    
+            bgp_policy.set(id=i["id"], disabled="false")
+            time.sleep(15)
+
+if action == "unban":
+    for i in output:
+        if ("SWALL-out" in i.values() and IP in i.values()):      
+            bgp_policy.set(id=i["id"], disabled="true")
+            connection.disconnect()
